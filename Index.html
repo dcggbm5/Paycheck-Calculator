@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paycheck Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e1f1b;--panel:#16302a;--ink:#f1ece0;--mute:#9db5ac;--line:#2a4a41;--jade:#3ddc97;--red:#ff6b5c;--gold:#e8b94a;--blue:#6fb6ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#eef3ef;--panel:#fff;--ink:#12261f;--mute:#56705f;--line:#cfdcd3;--jade:#0f9d63;--red:#d6402f;--gold:#b98a14;--blue:#2673c2}}
+:root[data-theme="dark"]{--bg:#0e1f1b}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,sans-serif;line-height:1.4}
+main{max-width:560px;margin:0 auto;padding:18px 16px 48px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+h1{font-size:clamp(32px,9vw,46px);line-height:1;margin:6px 0 8px;font-weight:800;letter-spacing:-.02em}
+.sub{color:var(--mute);margin:0 0 20px}
+.gear{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;display:grid;place-items:center;margin:0;padding:0}
+.gear svg{width:22px;height:22px}
+.gear[aria-expanded="true"]{border-color:var(--jade);color:var(--jade)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:18px}
+#settings[hidden]{display:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:14px;color:var(--mute)}
+label span{display:block;margin-bottom:5px}
+.f{display:flex;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:0 12px}
+.f:focus-within{border-color:var(--jade);outline:2px solid var(--jade);outline-offset:1px}
+.f i{font-style:normal;color:var(--mute);font-family:'DM Mono',monospace}
+input{width:100%;background:none;border:0;color:var(--ink);font:500 20px 'DM Mono',monospace;padding:12px 6px;outline:none;min-width:0}
+.main-in input{font-size:38px;padding:14px 6px}
+.main-in .f{border-color:var(--jade)}
+.main-in i{font-size:30px}
+.main-in>span{font-size:17px;color:var(--ink);font-weight:700}
+.hint{font-size:13px;color:var(--mute);margin:10px 0 0}
+.hero{text-align:center;padding:24px 16px 20px;border-radius:22px;background:linear-gradient(160deg,#1c4a3b,#0f2a23);border:1px solid var(--jade);margin-bottom:18px}
+.hero p{margin:0;color:#b9d6ca}
+.big{font-size:clamp(56px,17vw,84px);font-weight:800;letter-spacing:-.03em;color:var(--jade);line-height:1.05;font-variant-numeric:tabular-nums}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.chip{background:#ffffff14;border-radius:99px;padding:6px 12px;font-size:14px;color:#e6f2ec}
+.keep{font-weight:700;margin:0 0 10px}
+.bar{display:flex;height:26px;border-radius:13px;overflow:hidden;background:var(--bg)}
+.bar div{transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.legend{display:grid;gap:8px;margin-top:14px}
+.legend div{display:flex;align-items:center;gap:10px;font-size:15px}
+.legend b{margin-left:auto;font-family:'DM Mono',monospace;font-weight:500}
+.dot{width:12px;height:12px;border-radius:4px}
+button{font:700 15px 'Bricolage Grotesque',sans-serif;background:none;border:1px solid var(--line);color:var(--mute);padding:11px 14px;border-radius:99px;cursor:pointer;width:100%;margin-top:14px}
+button:focus-visible,button:hover{border-color:var(--jade);color:var(--ink)}
+button.go{background:var(--jade);color:#06221a;border-color:var(--jade);margin-top:0}
+button.go:hover,button.go:focus-visible{color:#06221a;filter:brightness(1.1)}
+h2{font-size:20px;margin:0 0 10px}
+.day{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:15px}
+.day:first-of-type{border-top:0}
+.day em{font-style:normal;color:var(--mute);flex:1}
+.day b{font-family:'DM Mono',monospace;font-weight:500}
+.day .net{color:var(--jade);min-width:84px;text-align:right}
+.x{all:unset;cursor:pointer;color:var(--mute);width:28px;height:28px;text-align:center;line-height:28px;border-radius:50%}
+.x:hover,.x:focus-visible{color:var(--red);outline:1px solid var(--red)}
+.tot{display:flex;justify-content:space-between;border-top:2px dashed var(--mute);margin-top:6px;padding-top:12px;font-size:18px}
+.tot b{font-family:'DM Mono',monospace;color:var(--jade);font-weight:500}
+.empty{color:var(--mute);margin:0}
+.foot{color:var(--mute);font-size:13px;text-align:center}
+@media (prefers-reduced-motion:reduce){.bar div{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div><h1>What do I actually keep?</h1><p class="sub">Type what you made today. That's it.</p></div>
+<button class="gear" id="gear" type="button" aria-label="Settings" aria-expanded="false" aria-controls="settings">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+</button>
+</header>
+
+<section class="panel" id="settings" hidden aria-label="Settings">
+<h2>Settings</h2>
+<div class="grid">
+<label><span>Hourly rate</span><div class="f"><i>$</i><input id="rate" type="number" inputmode="decimal" min="0" step="0.01"></div></label>
+<label><span>Federal tax</span><div class="f"><input id="fed" type="number" inputmode="decimal" min="0" max="50" step="0.001"><i>%</i></div></label>
+<label><span>Social Security</span><div class="f"><input id="ss" type="number" inputmode="decimal" min="0" step="0.01"><i>%</i></div></label>
+<label><span>Medicare</span><div class="f"><input id="med" type="number" inputmode="decimal" min="0" step="0.01"><i>%</i></div></label>
+</div>
+<p class="hint">These match your paystub from 7/12 to 7/25. Texas has no state income tax. Your changes are saved on this device.</p>
+<button id="reset" type="button">Reset to paystub values</button>
+</section>
+
+<section class="panel main-in">
+<label><span>Dollars I made today</span><div class="f"><i>$</i><input id="amt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" autofocus></div></label>
+<label style="margin-top:12px"><span>Hours worked (optional)</span><div class="f"><input id="hrs" type="number" inputmode="decimal" min="0" step="0.25" placeholder="0"></div></label>
+</section>
+
+<section class="hero" aria-live="polite">
+<p>You take home</p>
+<div class="big" id="net">$0.00</div>
+<div class="chips"><span class="chip" id="c1"></span><span class="chip" id="c2" hidden></span></div>
+</section>
+
+<section class="panel">
+<p class="keep" id="keep">Enter today's dollars to see where they go.</p>
+<div class="bar" role="img" aria-label="Where each dollar goes">
+<div id="bNet" style="background:var(--jade)"></div><div id="bFed" style="background:var(--red)"></div><div id="bSS" style="background:var(--gold)"></div><div id="bMed" style="background:var(--blue)"></div>
+</div>
+<div class="legend">
+<div><span class="dot" style="background:var(--jade)"></span>You keep<b id="lNet"></b></div>
+<div><span class="dot" style="background:var(--red)"></span>Federal income tax<b id="lFed"></b></div>
+<div><span class="dot" style="background:var(--gold)"></span>Social Security<b id="lSS"></b></div>
+<div><span class="dot" style="background:var(--blue)"></span>Medicare<b id="lMed"></b></div>
+</div>
+<button class="go" id="add" type="button" style="margin-top:16px">Add today to my pay period</button>
+</section>
+
+<section class="panel">
+<h2>My pay period</h2>
+<div id="days"></div>
+<div class="tot" id="totRow" hidden><span>Take-home so far</span><b id="totNet"></b></div>
+<p class="hint" id="totSub" hidden></p>
+<button id="clear" type="button" hidden>Start a new pay period</button>
+</section>
+<p class="foot">This is an estimate. Your real paycheck can differ a little.</p>
+</main>
+
+<script>
+(function(){
+var D={rate:7.25,fed:5.589,ss:6.2,med:1.45};
+var $=function(i){return document.getElementById(i)};
+var S=Object.assign({},D),days=[],shown=0;
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function fetchv(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}}
+var sv=fetchv('pc_settings');if(sv)S=Object.assign(S,sv);
+var dv=fetchv('pc_days');if(Array.isArray(dv))days=dv;
+function money(n){return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function r2(n){return Math.round(n*100)/100}
+function pos(v){var n=parseFloat(v);return isFinite(n)&&n>0?n:0}
+function split(g){var f=r2(g*S.fed/100),s=r2(g*S.ss/100),m=r2(g*S.med/100);return {f:f,s:s,m:m,n:r2(g-f-s-m)}}
+function tween(val){
+  var el=$('net'),from=shown,t0=performance.now();
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){el.textContent=money(val);shown=val;return}
+  (function step(t){var p=Math.min(1,(t-t0)/450),e=1-Math.pow(1-p,3);el.textContent=money(from+(val-from)*e);if(p<1)requestAnimationFrame(step);else shown=val})(t0);
+}
+function calc(){
+  var g=pos($('amt').value),h=pos($('hrs').value),t=split(g);
+  tween(t.n);
+  $('c1').textContent='You made '+money(g);
+  var c2=$('c2');
+  if(h>0&&g>0){
+    var wage=r2(h*S.rate),tips=Math.max(0,r2(g-wage));
+    c2.hidden=false;c2.textContent=money(t.n/h)+' an hour after taxes';
+  }else c2.hidden=true;
+  $('keep').textContent=g>0?'You keep '+Math.round(t.n/g*100)+' cents of every dollar.':"Enter today's dollars to see where they go.";
+  var d=g>0?g:1;
+  $('bNet').style.width=(t.n/d*100)+'%';$('bFed').style.width=(t.f/d*100)+'%';$('bSS').style.width=(t.s/d*100)+'%';$('bMed').style.width=(t.m/d*100)+'%';
+  $('lNet').textContent=money(t.n);$('lFed').textContent='-'+money(t.f);$('lSS').textContent='-'+money(t.s);$('lMed').textContent='-'+money(t.m);
+}
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+function renderDays(){
+  var box=$('days'),tg=0,tn=0;
+  if(!days.length){box.innerHTML='<p class="empty">No days yet. Enter your dollars above and tap "Add today".</p>'}
+  else box.innerHTML=days.map(function(d,i){var n=split(d.amt).n;tg+=d.amt;tn+=n;
+    return '<div class="day"><em>'+esc(d.label)+'</em><b>'+money(d.amt)+'</b><b class="net">'+money(n)+'</b><button class="x" data-i="'+i+'" aria-label="Remove '+esc(d.label)+'">&times;</button></div>'}).join('');
+  $('totRow').hidden=$('totSub').hidden=$('clear').hidden=!days.length;
+  $('totNet').textContent=money(tn);
+  $('totSub').textContent=days.length+(days.length===1?' day':' days')+', '+money(tg)+' earned before taxes.';
+}
+function loadSettings(){['rate','fed','ss','med'].forEach(function(k){$(k).value=S[k]})}
+['amt','hrs'].forEach(function(i){$(i).addEventListener('input',calc)});
+['rate','fed','ss','med'].forEach(function(k){$(k).addEventListener('input',function(){S[k]=pos($(k).value);store('pc_settings',S);calc();renderDays()})});
+$('gear').addEventListener('click',function(){var o=$('settings').hidden;$('settings').hidden=!o;this.setAttribute('aria-expanded',o)});
+$('reset').addEventListener('click',function(){S=Object.assign({},D);store('pc_settings',S);loadSettings();calc();renderDays()});
+$('add').addEventListener('click',function(){
+  var g=pos($('amt').value);if(!g){$('amt').focus();return}
+  var d=new Date();days.push({amt:g,label:d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})});
+  store('pc_days',days);$('amt').value='';$('hrs').value='';calc();renderDays();
+});
+$('days').addEventListener('click',function(e){var b=e.target.closest('.x');if(!b)return;days.splice(+b.dataset.i,1);store('pc_days',days);renderDays()});
+$('clear').addEventListener('click',function(){days=[];store('pc_days',days);renderDays()});
+loadSettings();calc();renderDays();
+})();
+</script>
+</body>
+</html>
